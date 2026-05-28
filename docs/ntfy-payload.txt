@@ -1,0 +1,53 @@
+
+###############################
+# CREATING OR UPDATING REMINDER
+###############################
+
+POST /reminders/REMINDER-ID HTTP/1.1
+Host: ntfy.alj.cx
+Authorization: Bearer tk_AgQdq7mVBoFD37zQVN29RhuMzNIz2
+
+data:
+{
+    "topic": "reminders",
+    "sequence_id": "REMINDER-ID-GENERATED-BEFORE-DISPATCH"
+    "message": "Markdown is supported herE: Disk space is low at 5.1 GB",
+    "markdown": true,
+    "title": "Low disk space alert",
+    "icon": "https://styles.redditmedia.com/t5_32uhe/styles/communityIcon_xnt6chtnr2j21.png",
+    "tags": ["warning","cd"],
+    "priority": 4,
+    "attach": "https://filesrv.lan/space.jpg",
+    "click": "include as stub but do not actually use",
+    "actions": [{ "action": "view", "label": "Admin panel", "url": "https://filesrv.lan/admin" }],
+    "delay": "unused",
+    "email": "test@x.alj.cx",
+    "call": "+1222334444"
+}
+
+Constraints:
+
+Priority: integer, 1 to 5, 5 is max priority, default is 3
+
+Docs on Actions:
+
+Each action type has a short format where some key prefixes can be omitted:
+
+view: view, <label>, <url>[, clear=true]
+broadcast:broadcast, <label>[, extras.<param>=<value>][, intent=<intent>][, clear=true]
+http: http, <label>, <url>[, method=<method>][, headers.<header>=<value>][, body=<body>][, clear=true]
+copy: copy, <label>, <value>[, clear=true]
+
+
+
+####################
+# CLEARING REMINDER
+####################
+
+PUT /reminders/REMINDER-ID/clear HTTP/1.1
+
+####################
+# DELETING REMINDER
+####################
+
+DELETE /reminders/REMINDER-ID HTTP/1.1
