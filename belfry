@@ -1,0 +1,189 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  🔔 Belfry CLI — Interactive reminder management powered by gum
+# ═══════════════════════════════════════════════════════════════════════════════
+
+BELFRY_URL="${BELFRY_URL:-http://localhost:8000}"
+
+# ─── Dracula palette ──────────────────────────────────────────────────────────
+PINK="#FF79C6"; CYAN="#8BE9FD"; GREEN="#50FA7B"
+YELLOW="#F1FA8C"; PURPLE="#BD93F9"; RED="#FF5555"
+FG="#F8F8F2"; COMMENT="#6272A4"
+
+# ─── Helpers ──────────────────────────────────────────────────────────────────
+header() { gum style --foreground "$CYAN" --bold "$1"; }
+dim()    { gum style --foreground "$COMMENT" "$1"; }
+ok()     { gum style --foreground "$GREEN" "✓ $1"; }
+err()    { gum style --foreground "$RED" "✗ $1"; }
+
+# ─── Main menu ────────────────────────────────────────────────────────────────
+clear
+gum style --border double --margin "0" --padding "0 2" --align center \
+  "$(gum style --foreground "$PINK" --bold "🔔 Belfry")" \
+  "$(dim "Ring the bells")"
+
+echo
+
+cmd=$(gum choose \
+  --header "$(header "What do you want to do?")" \
+  --cursor.foreground "$PINK" \
+  "🔔 new      — Create a reminder" \
+  "📋 list     — List reminders (placeholder)" \
+  "⏸️  pause    — Pause a reminder (placeholder)" \
+  "🗑️  delete   — Delete a reminder (placeholder)" \
+  "❌ quit")
+
+case "$cmd" in
+  *new*)
+    # ═══════════════════════════════════════════════════════════════════════
+    #  CREATE REMINDER
+    # ═══════════════════════════════════════════════════════════════════════
+    clear
+    gum style --border normal --padding "0 1" --foreground "$PINK" --bold " new reminder "
+    echo
+
+    # ── Auto-generate ID ─────────────────────────────────────────────────
+    reminder_id=$(openssl rand -hex 4)
+    dim "id: $reminder_id"
+    echo
+
+    # ── Schedule (REQUIRED) ──────────────────────────────────────────────
+    header "Schedule"
+    schedule=$(gum input --placeholder "* * * * *" --prompt "$(gum style --foreground "$CYAN" "cron > ")" --width 40)
+    [[ -z "$schedule" ]] && schedule="* * * * *"
+    ok "schedule: $schedule"
+    echo
+
+    # ── Message (REQUIRED) ───────────────────────────────────────────────
+    header "Message"
+    message=$(gum write --placeholder "What should the bell say?" --width 60 --height 4)
+    [[ -z "$message" ]] && { err "Message is required"; exit 1; }
+    ok "message set"
+    echo
+
+    # ── Optional fields selector ─────────────────────────────────────────
+    header "Optional fields"
+    dim "Space to select, Enter to confirm"
+    selected=$(gum choose --no-limit \
+      --header "$(dim "Pick fields to fill:")" \
+      --cursor.foreground "$PINK" \
+      "title" "priority" "tags" "attach" "actions")
+
+    # Build JSON payload piece by piece
+    json_payload="{\"message\":$(printf '%s' "$message" | jq -Rs .)}"
+
+    # ── Title ────────────────────────────────────────────────────────────
+    if [[ "$selected" == *"title"* ]]; then
+      title=$(gum input --placeholder "Notification title" --prompt "$(gum style --foreground "$CYAN" "title > ")" --width 50)
+      [[ -n "$title" ]] && json_payload=$(echo "$json_payload" | jq --arg t "$title" '. + {title: $t}')
+    fi
+
+    # ── Priority ─────────────────────────────────────────────────────────
+    if [[ "$selected" == *"priority"* ]]; then
+      priority=$(gum choose --header "$(dim "Priority (1=min, 5=max, default=3)")" \
+        --cursor.foreground "$PINK" "1" "2" "3" "4" "5")
+      json_payload=$(echo "$json_payload" | jq --argjson p "$priority" '. + {priority: $p}')
+    fi
+
+    # ── Tags ─────────────────────────────────────────────────────────────
+    if [[ "$selected" == *"tags"* ]]; then
+      tags_raw=$(gum input --placeholder "warning,cd,urgent" --prompt "$(gum style --foreground "$CYAN" "tags > ")" --width 50)
+      if [[ -n "$tags_raw" ]]; then
+        tags_json=$(echo "$tags_raw" | tr ',' '\n' | jq -R . | jq -s .)
+        json_payload=$(echo "$json_payload" | jq --argjson t "$tags_json" '. + {tags: $t}')
+      fi
+    fi
+
+    # ── Attach ───────────────────────────────────────────────────────────
+    if [[ "$selected" == *"attach"* ]]; then
+      attach=$(gum input --placeholder "https://example.com/image.jpg" --prompt "$(gum style --foreground "$CYAN" "attach > ")" --width 60)
+      [[ -n "$attach" ]] && json_payload=$(echo "$json_payload" | jq --arg a "$attach" '. + {attach: $a}')
+    fi
+
+    # ── Actions ──────────────────────────────────────────────────────────
+    if [[ "$selected" == *"actions"* ]]; then
+      actions="[]"
+      while true; do
+        action_type=$(gum choose --header "$(dim "Action type (Esc to finish)")" \
+          --cursor.foreground "$PINK" "view" "http" "copy" "broadcast" "done")
+        [[ "$action_type" == "done" ]] && break
+
+        label=$(gum input --placeholder "Button label" --prompt "$(gum style --foreground "$CYAN" "label > ")")
+        [[ -z "$label" ]] && continue
+
+        case "$action_type" in
+          view)
+            url=$(gum input --placeholder "https://..." --prompt "$(gum style --foreground "$CYAN" "url > ")")
+            action_json=$(jq -n --arg a "$action_type" --arg l "$label" --arg u "$url" '{action: $a, label: $l, url: $u}')
+            ;;
+          http)
+            url=$(gum input --placeholder "https://..." --prompt "$(gum style --foreground "$CYAN" "url > ")")
+            method=$(gum choose --header "$(dim "Method")" "GET" "POST" "PUT" "DELETE")
+            action_json=$(jq -n --arg a "$action_type" --arg l "$label" --arg u "$url" --arg m "$method" '{action: $a, label: $l, url: $u, method: $m}')
+            ;;
+          copy)
+            value=$(gum input --placeholder "Text to copy" --prompt "$(gum style --foreground "$CYAN" "value > ")")
+            action_json=$(jq -n --arg a "$action_type" --arg l "$label" --arg v "$value" '{action: $a, label: $l, value: $v}')
+            ;;
+          broadcast)
+            intent=$(gum input --placeholder "android.intent.action.VIEW" --prompt "$(gum style --foreground "$CYAN" "intent > ")")
+            action_json=$(jq -n --arg a "$action_type" --arg l "$label" --arg i "$intent" '{action: $a, label: $l, intent: $i}')
+            ;;
+        esac
+
+        actions=$(echo "$actions" | jq --argjson a "$action_json" '. + [$a]')
+        ok "action added: $label"
+      done
+      [[ "$actions" != "[]" ]] && json_payload=$(echo "$json_payload" | jq --argjson a "$actions" '. + {actions: $a}')
+    fi
+
+    # ── Build final request ──────────────────────────────────────────────
+    json_body=$(jq -n \
+      --arg s "$schedule" \
+      --argjson p "$json_payload" \
+      '{schedule: $s, payload: $p}')
+
+    echo
+    header "Preview"
+    echo "$json_body" | jq .
+    echo
+
+    if gum confirm --affirmative "Ring it" --negative "Cancel" "Send to belfry?"; then
+      resp=$(curl -s -w "\n%{http_code}" -X POST "$BELFRY_URL/reminders/$reminder_id" \
+        -H "Content-Type: application/json" \
+        -d "$json_body")
+      http_code=$(echo "$resp" | tail -n1)
+      body=$(echo "$resp" | sed '$d')
+
+      if [[ "$http_code" == "200" ]]; then
+        echo
+        gum style --border rounded --padding "0 2" --foreground "$GREEN" \
+          "✅ Reminder scheduled" \
+          "$(dim "id: $reminder_id")" \
+          "$(dim "schedule: $schedule")"
+      else
+        err "HTTP $http_code — $body"
+      fi
+    else
+      dim "Cancelled."
+    fi
+    ;;
+
+  *list*)
+    echo; dim "List not implemented yet."; echo
+    ;;
+
+  *pause*)
+    echo; dim "Pause not implemented yet."; echo
+    ;;
+
+  *delete*)
+    echo; dim "Delete not implemented yet."; echo
+    ;;
+
+  *quit*)
+    echo; dim "Silence."; exit 0
+    ;;
+esac

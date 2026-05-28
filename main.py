@@ -1,5 +1,4 @@
-import asyncio, os, honker, logging, sys
-from contextlib import asynccontextmanager
+import os, honker, logging, sys
 from croniter   import croniter
 from fastapi    import Depends, FastAPI, HTTPException
 from models     import ReminderRequest
@@ -15,12 +14,8 @@ logger = logging.getLogger("reminder-api")
 
 # ─── Config ───────────────────────────────────────────────────────────────────
 DB_PATH  = "/data/reminders/reminders.db"
-QUEUE    = "reminders"          # [HARDcoded] per reminder schema — also ntfy topic
+QUEUE    = "reminders"
 ICON     = "https://styles.redditmedia.com/t5_32uhe/styles/communityIcon_xnt6chtnr2j21.png"
-
-# [HARDcoded] per ntfy schema — do not change
-EMAIL    = "test@x.alj.cx"
-CALL     = "+1222334444"
 
 # Ensure data directory exists
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
@@ -61,20 +56,19 @@ def _build_ntfy_payload(reminder_id: str, req: ReminderRequest) -> dict:
     sequence_id = f"rem-{reminder_id}"
 
     return {
-        # ── ntfy schema — ALL fields present, no omissions ────────────────────
-        "topic":       QUEUE,                       # [HARDcoded] "reminders"
-        "sequence_id": sequence_id,                  # [DERIVED] reminder.name
-        "message":     p.message,                   # [FROM payload] notification body
-        "markdown":    True,                        # [HARDcoded] true per schema
-        "title":       p.title,                     # [FROM payload] optional title
-        "icon":        ICON,                        # [HARDcoded] per schema
-        "tags":        p.tags,                      # [FROM payload] optional tags
+        "topic":       QUEUE,
+        "sequence_id": sequence_id,
+        "message":     p.message,
+        "markdown":    True,
+        "title":       p.title,
+        "icon":        ICON,
+        "tags":        p.tags,
         "priority":    p.priority,                  # [FROM payload] 1-5, default 3
-        "attach":      p.attach,                    # [FROM payload] optional attachment URL
-        "click":       "",                          # [STUB] "include as stub but do not actually use"
+        "attach":      p.attach,
+        "click":       "",
         "actions":     [a.model_dump(exclude_none=True) for a in p.actions] if p.actions else [],
-        "email":       EMAIL,                       # [HARDcoded] per schema
-        "call":        CALL,                        # [HARDcoded] per schema
+        "email":       "",
+        "call":        "",
     }
 
 
