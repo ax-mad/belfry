@@ -6,7 +6,7 @@ set -euo pipefail
 #  🔔 Belfry CLI — Interactive reminder management powered by gum
 # ═══════════════════════════════════════════════════════════════════════════════
 
-BELFRY_URL="${BELFRY_URL:-http://localhost:8000}"
+BELFRY_URL="${BELFRY_URL:-http://majula:8000}"
 
 # ─── Dracula palette ──────────────────────────────────────────────────────────
 PINK="#FF79C6"; CYAN="#8BE9FD"; GREEN="#50FA7B"
