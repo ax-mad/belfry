@@ -5,6 +5,7 @@ requires-python = ">=3.12"
 dependencies = [
     "croniter>=6.2.2",
     "fastapi>=0.136.3",
+    "honker>=0.2.5",
     "httpx>=0.28.1",
     "pydantic>=2.13.4",
     "uvicorn>=0.48.0",

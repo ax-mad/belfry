@@ -6,9 +6,9 @@ After=network.target
 Type=simple
 User=belfry
 Group=belfry
-WorkingDirectory=/opt/belfry
-EnvironmentFile=/opt/belfry/.env
-ExecStart=/usr/bin/uv run python ringer.py
+WorkingDirectory=/srv/belfry
+EnvironmentFile=/srv/belfry/.env
+ExecStart=/usr/bin/uv run ringer.py
 Restart=always
 RestartSec=5
 

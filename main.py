@@ -154,7 +154,7 @@ if __name__ == "__main__":
         "main:app",
         host="0.0.0.0",
         port=8000,
-        log_level="debug",
+        log_level="info",
         reload=False,          # set True for auto-reload during dev
         access_log=True,
     )
