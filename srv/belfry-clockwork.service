@@ -1,0 +1,16 @@
+[Unit]
+Description=Belfry Clockwork — Scheduler that fires due reminders
+After=network.target
+
+[Service]
+Type=simple
+User=belfry
+Group=belfry
+WorkingDirectory=/opt/belfry
+EnvironmentFile=/opt/belfry/.env
+ExecStart=/usr/bin/uv run python clockwork.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

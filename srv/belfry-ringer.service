@@ -1,0 +1,16 @@
+[Unit]
+Description=Belfry Ringer — Worker that sends notifications to ntfy
+After=network.target
+
+[Service]
+Type=simple
+User=belfry
+Group=belfry
+WorkingDirectory=/opt/belfry
+EnvironmentFile=/opt/belfry/.env
+ExecStart=/usr/bin/uv run python ringer.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
