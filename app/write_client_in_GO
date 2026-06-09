@@ -1,0 +1,1 @@
+Do not write belfry CLI in its own repo, instead distribute it as an executable in releases

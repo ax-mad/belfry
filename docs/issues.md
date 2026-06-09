@@ -1,14 +1,21 @@
 
 # TEMPORARY LOCATION FOR ISSUES UNTIL A BETTER SYSTEM IS DESIGNED
 
-## BUGS
+## ISSUES
 
-## FEATURES
+- [ ] **NEXT** DELETE REMINDERS: /reminders/delete/{id}
 
-- DELETE REMIDNERS: /reminders/delete
-	- NEED TO GET REMINDERS
+- [ ] Implement auth by JWT token
+		Allow family members to login and create reminders to their own channels, or my channel for that fact.
 
-- FEATURE: 
+- [ ] Populate reminders by forwarding email to Belry
+		Ability to extract attachments.
+
+- [ ] SELF-DESTRUCTING REMINDERS AKA "time-to-live"
+		Reminders should not stack up. Some reminders are only relevant in a small window.
+		This feature depends on implementation of /reminders/delete endpoint
+
+- [ ] Stick in Docker container
 
 ## UPKEEP
 

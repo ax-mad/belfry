@@ -1,20 +1,19 @@
 import asyncio, os, honker, logging, sys, httpx
+from services import NtfyService
+
+# TODO: ISSUES
+
+# SAME ISSUES AS CLOCKWORK
 
 # ─── Logging ──────────────────────────────────────────────────────────────────
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
-    datefmt="%H:%M:%S",
-    handlers=[logging.StreamHandler(sys.stdout)],
-)
-logger = logging.getLogger("reminder-worker")
+# logging.basicConfig(
+#     level=logging.DEBUG,
+#     format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+#     datefmt="%H:%M:%S",
+#     handlers=[logging.StreamHandler(sys.stdout)],
+# )
+# logger = logging.getLogger("reminder-worker")
 
-# ─── Config ───────────────────────────────────────────────────────────────────
-DB_PATH = "/data/reminders/reminders.db"
-QUEUE   = "reminders"
-TOPIC   = "reminders" # temp
-NTFY_URL = os.getenv("NTFY_URL", "https://ntfy.alj.cx")
-WORKER_ID = os.getenv("WORKER_ID", "worker-1")
 
 # Ensure data directory exists
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
@@ -22,6 +21,17 @@ os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 db    = honker.open(DB_PATH)
 queue = db.queue(QUEUE)
 
+class Ringer:
+    def __init__(self,
+        db_path:str,
+        queue:str,
+        ntfy_service:NtfyService,
+        worker_id = "worker-1"
+    ):
+        self.db = db_path
+        self.queue = queue
+        self.worker_id = worker_id
+        self.ntfy = ntfy_service
 
 async def send_to_ntfy(payload: dict) -> bool:
     """Send the ntfy payload to the ntfy server."""

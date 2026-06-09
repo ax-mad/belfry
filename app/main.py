@@ -1,7 +1,28 @@
 import os, honker, logging, sys
+from config     import Configurator
 from croniter   import croniter
 from fastapi    import Depends, FastAPI, HTTPException
 from models     import ReminderRequest
+from services   import Clockwork, Ringer, NtfyService
+
+# Dependencies =========================
+
+# log  = Logger(name="uvicorn", color="green")  # paramters dont seem to work as intended
+conf = Configurator()
+# auth = Authenticator(conf.api_key)            # Actually, use JWT for future web UI
+ntfy = NtfyService(
+    conf.ntfy_url,
+    conf.topic
+)
+scheduler = Clockwork(database=conf.database)
+worker = Ringer(
+    db_path=conf.database,
+    queue=conf.queue,
+    worker_id=conf.worker_id,
+    ntfy_service=ntfy
+)
+
+### SLOP DELIMITER =====================
 
 # ─── Logging ──────────────────────────────────────────────────────────────────
 logging.basicConfig(
