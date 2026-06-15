@@ -1,4 +1,4 @@
-import os, honker, sys
+# import os, honker, sys
 from pykit.config import Configurator, env
 from pykit.logging import Logger
 from pykit.security import Authenticator
@@ -33,17 +33,38 @@ worker = Ringer(
 
 app = FastAPI()
 
-### SLOP DELIMITER =====================
-
-# Ensure data directory exists
-os.makedirs(os.path.dirname(conf.database), exist_ok=True)
-
-db        = honker.open(conf.database)
-scheduler = honker.Scheduler(db)
-
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+@app.get("/reminder")
+async def get_reminders():
+    return {
+        "reminders": [
+            {"a": "reminder a"},
+            {"b": "reminder b"}
+        ]
+    }
+
+@app.get("/reminder/{reminder_id}")
+async def get_reminder(reminder_id):
+    return {reminder_id: "reminder a"}
+
+@app.post("/reminder/{reminder_id}")
+async def create_reminder(reminder_id):
+    return {"success": "ok", reminder_id: "reminder a"}
+
+@app.delete("/reminder/{reminder_id}")
+async def delete_reminder(reminder_id):
+    return f"deleted {reminder_id}"
+
+### SLOP DELIMITER =====================
+
+# Ensure data directory exists
+# os.makedirs(os.path.dirname(conf.database), exist_ok=True)
+
+# db        = honker.open(conf.database)
+# scheduler = honker.Scheduler(db)
 
 @app.post("/reminders/{reminder_id}")
 async def create_or_update_reminder(reminder_id: str, body: ReminderRequest):
