@@ -1,0 +1,8 @@
+Problem: Reminders linger after losing relevance. Also, no way to delete them manually.
+
+1. Attribute TTL to reminders. They must cease to exist aftera given time. How to encode? tags? +ttl:60 Duration-based or deadline-based?
+
+Create notification at time tob=t (time of birth) with ttl=60 (time to live: 1 hour)
+Poll notifications, compute tod (time of death), if passed, queue job: delete. Let workers handle it.
+
+2. Add a DELETE and an ACK button to notifications. 

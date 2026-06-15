@@ -5,15 +5,24 @@
 
 - [ ] **NEXT** DELETE REMINDERS: /reminders/delete/{id}
 
+- [ ] SELF-DESTRUCTING REMINDERS AKA "time-to-live"
+		Reminders should not stack up. Some reminders are only relevant in a small window.
+		This feature depends on implementation of /reminders/delete endpoint
+
+- [ ] WRITE A GO CLIENT WHICH CONNECTS TO BELFRY
+		IMPLEMENT THESE DEPENDENCIES IN ORDER:
+			- [ ] Logger
+				- [ ] Add to https://github.com/ax-mad/pykit
+			- [ ] Configurator
+				- [ ] Add to pykit
+				
+
 - [ ] Implement auth by JWT token
 		Allow family members to login and create reminders to their own channels, or my channel for that fact.
 
 - [ ] Populate reminders by forwarding email to Belry
 		Ability to extract attachments.
 
-- [ ] SELF-DESTRUCTING REMINDERS AKA "time-to-live"
-		Reminders should not stack up. Some reminders are only relevant in a small window.
-		This feature depends on implementation of /reminders/delete endpoint
 
 - [ ] Stick in Docker container
 

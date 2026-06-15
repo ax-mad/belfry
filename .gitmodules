@@ -1,0 +1,3 @@
+[submodule "app/pykit"]
+	path = app/pykit
+	url = https://github.com/axjab/pykit
