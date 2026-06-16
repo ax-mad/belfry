@@ -1,3 +1,6 @@
 [submodule "app/pykit"]
 	path = app/pykit
 	url = https://github.com/axjab/pykit
+[submodule "app/entities"]
+	path = app/entities
+	url = https://github.com/axjab/python-entities
