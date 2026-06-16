@@ -1,7 +1,6 @@
 # belfry/app/models/reminder.py
-from dataclasses     import dataclass, field
-from entities        import Recurrence
-from .notification   import Notification
+from dataclasses     import dataclass
+from entities        import Recurrence, Notification
 
 
 @dataclass

@@ -1,0 +1,66 @@
+class ReminderRequest:
+    recurring: bool
+    message:  str
+    cron:     list[str]       = field(default_factory=list)
+    begin:    datetime | None = None
+    end:      datetime | None = None
+    ttl:      timedelta | None = None
+    title:    str             = ""
+    tags:     list[str]       = field(default_factory=list)
+    priority: Priority        = Priority.DEFAULT
+
+
+$notification =
+    id: reminder_id
+    topic: reminders
+    message:  ReminderRequest.message
+    title:    ReminderRequest.
+    icon:     ignore
+    tags:
+        ttl:ReminderRequest.ttl
+    priority: ReminderRequest.priority
+    attach:   ignore
+    click:    ignore
+    actions:
+        action 1: delete
+        action 2: ack
+        action 3: snooze
+    email:    ignore
+    call:     ignore
+    delay:    ignore
+
+action 1,2,3 TODO
+    label:       str
+    url:         str
+    action_type: ActionType      = ActionType.http
+    method:      Method          = Method.GET
+    headers:     dict[str, str]  = field(default_factory=dict)
+    body:        str             = ""
+    clear:       bool            = False
+    intent:      str             = ""
+
+
+CASE 1: NON-RECURRING: SKIP TO QUEUE
+
+ID = whocares
+queue = reminders
+payload = $notification
+priority = default
+run_at = unix(ReminderRequest.begin)
+
+
+
+CASE 2: RECURRING: ENTER TASKS
+
+
+$reminder_id = "rem-{$notification.id}
+$next_fire = unix(ReminderRequest.begin)
+$notification = ?
+
+class HonkerTask:
+    name:     $reminder_id
+    queue:    reminders
+    cron_expr: ReminderRequest.cron[0]
+    next_fire_at: $next_fire
+    expires:  int          = default
+    payload:  dict         = $notification
